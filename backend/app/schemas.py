@@ -28,6 +28,49 @@ class EntryPayload(BaseModel):
     remark: str | None = None
 
 
+class RequisitionLine(BaseModel):
+    """批量领用里的一条明细：按试剂台账行 id 定位，逐条填领用人与瓶数。"""
+
+    id: int
+    领用人: str = ""
+    领用数量: int = 1
+
+
+class BatchRequisitionPayload(BaseModel):
+    """整组领用提交：领用日期全组统一，领用人逐条填写。"""
+
+    领用日期: str
+    items: list[RequisitionLine] = Field(default_factory=list)
+
+
+class BatchDisposalPayload(BaseModel):
+    """整组报废提交：报废日期全组统一，ids 为勾选的台账行。"""
+
+    报废日期: str
+    处置说明: str | None = None
+    ids: list[int] = Field(default_factory=list)
+
+
+class BatchLineResult(BaseModel):
+    """批量提交里单条明细的处理结果：成功或卡住的原因都写在这里。"""
+
+    id: int
+    试剂编号: str
+    ok: bool
+    message: str
+
+
+class BatchResult(BaseModel):
+    """整组提交的汇总：逐条结果 + 成功失败计数，成功的条目不回滚。"""
+
+    ok: bool
+    message: str
+    批次号: str
+    succeeded: int
+    failed: int
+    results: list[BatchLineResult] = Field(default_factory=list)
+
+
 
 class SampleEntry(BaseModel):
     """检测样品明细结构。"""
