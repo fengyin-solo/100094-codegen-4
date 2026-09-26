@@ -28,6 +28,49 @@ class EntryPayload(BaseModel):
     remark: str | None = None
 
 
+class CheckoutItem(BaseModel):
+    """批量领用里的一条明细：按行 id 定位试剂，规格等级不同的行各自成记录、互不合并。"""
+
+    id: int
+    试剂编号: str | None = None
+    规格等级: str | None = None
+    领用人: str | None = None
+    数量: int | None = None
+
+
+class BatchCheckoutPayload(BaseModel):
+    """整组领用：全组共用一个领用日期，每条明细各自填领用人与数量。"""
+
+    领用日期: str | None = None
+    items: list[CheckoutItem] = Field(default_factory=list)
+
+
+class BatchDisposePayload(BaseModel):
+    """批量报废：只传行 id，已开封或已废弃的行由服务端逐条挑出并说明原因。"""
+
+    ids: list[int] = Field(default_factory=list)
+    报废日期: str | None = None
+
+
+class BatchItemResult(BaseModel):
+    """整组提交里单条明细的处理结果：成功写明扣减结果，失败写明卡住的试剂编号与原因。"""
+
+    id: int | None = None
+    试剂编号: str | None = None
+    ok: bool
+    message: str
+
+
+class BatchResult(BaseModel):
+    """整组提交的汇总：成功的条目已落库不回滚，失败的条目可修正后单独重试。"""
+
+    ok: bool
+    message: str
+    succeeded: int
+    failed: int
+    results: list[BatchItemResult] = Field(default_factory=list)
+
+
 
 class SampleEntry(BaseModel):
     """检测样品明细结构。"""
